@@ -3,7 +3,7 @@ import cheerio from "cheerio"
 import puppeteer from "puppeteer"
 
 const geckoUrl = 'https://www.coingecko.com/en/coins/';
-const api = 'http://localhost:3000/api';
+const api = 'http://localhost:3000/api'; //TODO SWITCH THIS TO THE HOSTED BACKEND
 //Given a coingecko token page url, scrape exchange orderbook depth information
 //https://coingecko.com/en/coins/<name>#markets
 

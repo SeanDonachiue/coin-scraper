@@ -1,9 +1,9 @@
 {
-  "name": "tokendb2",
+  "name": "coinScraper",
   "version": "1.0.0",
-  "description": "database of useful info for crypto trading",
+  "description": "scraper of useful info for crypto trading",
   "type": "module",
-  "main": "server.js",
+  "main": "scrapegecko.js",
   "scripts": {
     "test": "test",
     "start": "pm2-runtime start ecosystem.config.js --env production"
@@ -13,8 +13,6 @@
   "dependencies": {
     "axios": "^0.27.2",
     "cheerio": "^1.0.0-rc.11",
-    "express": "^4.18.1",
-    "mongoose": "^6.3.3",
     "pm2": "^5.2.0",
     "puppeteer": "^14.4.1",
     "typescript": "^4.6.4"
