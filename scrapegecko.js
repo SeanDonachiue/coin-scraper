@@ -12,6 +12,10 @@ const api = 'http://localhost:3000/api'; //TODO SWITCH THIS TO THE HOSTED BACKEN
 //table entries with usd or stablecoin trading pairs, 24hr volume greater than $5m
 //$(selector, [context], [root])
 
+
+//TODO sum data
+//parsefloats and remove commas first
+
 async function scrapeToken(url) {
 
 	//might want to pull this initialization step to a higher execution context
@@ -51,6 +55,10 @@ async function scrapeToken(url) {
 
 	//take a timestamp observation before processing everything so data is not sparsely populated across timestamps
 	const timestamp = new Date().toISOString();
+	let obupSum = 0;
+	let obdownSum = 0;
+	let volSum = 0;
+	let tokenName = url.substring(geckoUrl.length);
 
 	const sponsoredRows = table('tbody:nth-of-type(1) tr');
 	sponsoredRows.each((i, el) => {
@@ -83,8 +91,12 @@ async function scrapeToken(url) {
 		};
 		if(observation.pair.includes("USD")) {
 			obsArray.push(observation);
+			obupSum += parseFloat(observation.obup.replace(/,/g, ''));
+			obdownSum += parseFloat(observation.obdown.replace(/,/g, ''));
+			volSum += parseFloat(observation.volume.replace(/,/g, ''));
 		}
 	});
+
 	const rows = table('tbody:nth-of-type(2) tr');
 	rows.each((i, el) => {
 		const num = $('td:nth-of-type(1)', el).text();
@@ -104,23 +116,35 @@ async function scrapeToken(url) {
 		let strings = removeNewline([name, exch, pair, price, obup, obdown, vol]);
 		//console.log(strings);
 
-		//TODO MAYBE REMOVE COMMAS FROM NUMBER STRINGS SO THEY CAN BE PARSED TO FLOAT or INT
 		let observation = {
 			token: strings[0],
 			exchange: strings[1],
 			pair: strings[2],
-  			stamp: timestamp,
-  			price: strings[3],
-  			obup: strings[4],
-  			obdown:strings[5],
-  			volume: strings[6]
+  		stamp: timestamp,
+  		price: strings[3],
+  		obup: strings[4],
+  		obdown:strings[5],
+  		volume: strings[6]
 		};
 		if(observation.pair.includes("USD")) {
 			obsArray.push(observation);
+			obupSum += parseFloat(observation.obup.replace(/,/g, ''));
+			obdownSum += parseFloat(observation.obdown.replace(/,/g, ''));
+			volSum += parseFloat(observation.volume.replace(/,/g, ''));
 		}
 	});
+
 	obsArray = JSON.stringify(obsArray);
 	console.log(obsArray);
+	let aggregatedObs = {
+		token: tokenName,
+		stamp: timestamp,
+		price: parseFloat(price.replace(/,/g, '')),
+		obup: obupSum,
+		obdown: obdownSum,
+		volume: volSum
+	};
+	aggregatedObs = JSON.stringify(aggregatedObs);
 	if(obsArray.length != 0) {
 		axios({
 			method: 'post',
@@ -128,7 +152,18 @@ async function scrapeToken(url) {
 			data: {"data": obsArray}
 		}).then(res => {
 			console.log(res);
-		})
+			axios({
+			method: 'post',
+			url: api + '/addAggregatedStamps',
+			data: {"data": aggregatedObs}
+			}).then(res => {
+			console.log(res)
+			});
+		});
+
+		//send another one to post aggregated data
+		
+
 	}
 	await browser.close();
 }
@@ -182,7 +217,7 @@ function scrapeController(tokenList) {
 
 
 
-const list = ["ethereum", "bitcoin"];
+const list = ["ethereum", "bitcoin", "solana"];
 const hour = 3600000;
 const five = 300000;
 //run it here
