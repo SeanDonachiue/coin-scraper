@@ -6,7 +6,7 @@
   "main": "scrapegecko.js",
   "scripts": {
     "test": "test",
-    "start": "pm2-runtime start ecosystem.config.js --env production"
+    "start": ""
   },
   "author": "",
   "license": "ISC",

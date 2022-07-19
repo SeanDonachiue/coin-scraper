@@ -3,7 +3,7 @@ import cheerio from "cheerio"
 import puppeteer from "puppeteer"
 
 const geckoUrl = 'https://www.coingecko.com/en/coins/';
-const api = 'http://master--globaltokenbook.netlify.app/.netlify/functions'; //TODO SWITCH THIS TO THE HOSTED BACKEND
+const api = 'https://master--globaltokenbook.netlify.app/.netlify/functions'; //TODO SWITCH THIS TO THE HOSTED BACKEND
 //Given a coingecko token page url, scrape exchange orderbook depth information
 //https://coingecko.com/en/coins/<name>#markets
 
@@ -16,11 +16,10 @@ const api = 'http://master--globaltokenbook.netlify.app/.netlify/functions'; //T
 //TODO sum data
 //parsefloats and remove commas first
 
-async function scrapeToken(url) {
+async function scrapeToken(url, page) {
 
 	//might want to pull this initialization step to a higher execution context
-	const browser = await puppeteer.launch();
-	const page = await browser.newPage();
+	
 	await page.goto(url);
 	console.log(page.url());
 	//console.log(await page.$eval("body", el => el.innerHTML));
@@ -165,7 +164,7 @@ async function scrapeToken(url) {
 		
 
 	}
-	await browser.close();
+	
 }
 
 
@@ -206,13 +205,18 @@ function sleep(ms) {
 
 //@param tokenList - list of tokens to scrape and store data for
 //@param t - time interval in ms to wait between scrapes
-function scrapeController(tokenList) {
+async function scrapeController(tokenList) {
+	const browser = await puppeteer.launch();
+
 	console.log("started scrapecontroller function");
 		for(let i = 0; i < tokenList.length; i++) {
+			const page = await browser.newPage();
 			console.log("in the for loop");
-			scrapeToken(geckoUrl + tokenList[i]);
-		}	
+			await scrapeToken(geckoUrl + tokenList[i], page);
+		}
+	await browser.close();
 }
+
 
 
 
@@ -222,4 +226,6 @@ const hour = 3600000;
 const five = 300000;
 //run it here
 //setInterval((list)=>scrapeController, 10000);
-setInterval(() => scrapeController(list), five);
+//setInterval(() => scrapeController(list), five);
+
+scrapeController(list);
